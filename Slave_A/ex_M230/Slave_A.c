@@ -119,6 +119,7 @@ void Mode(uint8 a)
 			for(int i = 0;i < 8;i++)
 			{
 				READProgram(pRxData[i+2]);
+				SendData(pRxData[i+2]);
 				halLcdDisplayUint8(HAL_LCD_LINE_2,8,HAL_LCD_RADIX_DEC,pRxData[i+2]);
 				for(int j = 0;j < 8;j++)
 				{
