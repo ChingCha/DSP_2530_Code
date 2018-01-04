@@ -68,7 +68,7 @@ void CommandAction(uint8 zone);
 void WriteEEPROM(uint8 zone,uint8 mode);
 void AutoReadEEPRom(void);
 void halLcdWriteIntToChar(uint8 lcd_line,uint8 lcd_col,uint8 lcd_text);
-void ShowZoneMode(void);
+void ShowZoneMode(uint8 zone);
 void SendData(uint8 zone);
 //¥D¨ç¼Æ
 void main(void) 
@@ -78,7 +78,6 @@ void main(void)
 	{
 		key = halKeypadPushed();
 		if(key == 'A' || key == 'B' || key == 'C') CommandZone(key);
-		if(key == '0') ShowZoneMode();
 		halMcuWaitMs(300); 
 		
 	}
@@ -102,9 +101,9 @@ void MasterInit(void)
     halLedSet(8);
     halBuzzer(300);
 	
-    basicRfConfig.myAddr = ONE_AREA;
+    basicRfConfig.myAddr = Master;
     if (basicRfInit(&basicRfConfig) == FAILED){}
-    basicRfReceiveOff();
+    basicRfReceiveOn();
 
 	halLcdWriteString(HAL_LCD_LINE_1,0,"I.O.L_System:M_A");
 	halLcdWriteString(HAL_LCD_LINE_2,0,"Target:ABC___");
@@ -202,10 +201,11 @@ void Client_Program_Time()
 		if(key == '*') 
 		{
 			KeyCount = 0;
+			halLcdWriteString(HAL_LCD_LINE_2,0,"__00ms Delay    ");
 		}
 		halMcuWaitMs(300);
 	}
-	SendTime = ProgramDelay[0] + ProgramDelay[1];
+	SendTime = ProgramDelay[0] * 10 + ProgramDelay[1];
 	pTxData[1] = SendTime;
 }
 /********************
@@ -285,7 +285,7 @@ void CommandAction(uint8 zone)
 	while(1)
 	{
 		Mode = ReadKeyInt();
-		if(Mode > 0 && Mode < 4) break;
+		if(Mode > 0 && Mode < 5) break;
 	}
 	halBuzzer(100);
 	switch(Mode)
@@ -304,6 +304,9 @@ void CommandAction(uint8 zone)
 			halLcdWriteString(HAL_LCD_LINE_2,0,"Send_Mode : 3 ");
 			WriteEEPROM(zone,3);
 			break;
+		case 4:
+			ShowZoneMode(zone);
+			break;
 	}
 }
 /*********************
@@ -314,10 +317,22 @@ void ShowZoneMode(uint8 zone)
 {
     halLcdClear();
 	halLcdWriteString(HAL_LCD_LINE_1,0,"Slave  Woking");
+	halLcdWriteString(HAL_LCD_LINE_2,0,"Program:");
 	switch(zone)
 	{
 		case 0:
 			halLcdWriteString(HAL_LCD_LINE_1,5,"A");
+			while (!basicRfPacketIsReady())
+			{
+				halLedToggle(7);
+				halMcuWaitMs(10);
+			}		
+			while(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL) > 0)
+			{
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,9,pRxData[1]);
+				key = halKeypadPushed();
+				if(key == '*') break;
+			}
 			break;
 		case 1:
 			halLcdWriteString(HAL_LCD_LINE_1,5,"B");
@@ -326,6 +341,9 @@ void ShowZoneMode(uint8 zone)
 			halLcdWriteString(HAL_LCD_LINE_1,5,"C");
 			break;
 	}
+	halLcdClear();
+	halLcdWriteString(HAL_LCD_LINE_1,0,"I.O.L_System:M_A");
+	halLcdWriteString(HAL_LCD_LINE_2,0,"Target:ABC");
 }
 /**************************************************
 M230	
@@ -390,5 +408,4 @@ void SendData(uint8 zone)
 		if(zone == 0) basicRfSendPacket(A_ZONE,pTxData,APP_PAYLOAD_LENGTH);
 		if(zone == 1) basicRfSendPacket(B_ZONE,pTxData,APP_PAYLOAD_LENGTH);
 		if(zone == 2) basicRfSendPacket(C_ZONE,pTxData,APP_PAYLOAD_LENGTH);
-	}
 }

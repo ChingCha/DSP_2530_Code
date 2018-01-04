@@ -13,8 +13,7 @@ ActionState=1
 Enabled=0
 ShowSource=1
 [DisAssemblyWindow]
-NumStates=_ 1
-State 1=_ 1
+NumStates=_ 0
 [Profiling]
 Enabled=0
 [StackPlugin]
@@ -28,9 +27,14 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=841409631
+Checksum=-681257588
 [InstructionProfiling]
 Enabled=_ 0
+[Breakpoints]
+Count=0
+[ChipconEmu]
+Stop timers on halt=0
+Leave target running=1
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -38,11 +42,6 @@ Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
-[Breakpoints]
-Count=0
-[ChipconEmu]
-Stop timers on halt=0
-Leave target running=1
 [Aliases]
 A0=_ "C:\Users\L632\Desktop\DSP_Wireless_¶i¶¥´Ú\components\common\hal_digio.c" ""
 A1=_ "C:\Users\L632\Desktop\DSP_Wireless_¶i¶¥´Ú\components\common\hal_rf.c" ""

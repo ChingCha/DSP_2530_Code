@@ -44,13 +44,13 @@ static basicRfCfg_t basicRfConfig;
 //-------------------------------------------------
 uint8 key;
 uint16 ProgramDelay;
-uint8 ModeRam[9];
 //-------------------------------------------------
 void SlaveInit(void);
 void Program(uint8 b);
 void Mode(uint8 a);
 void ShowLCD(void);
 uint8 BreakMode(uint8 i,uint8 j);
+void SendData(uint8 Program);
 /********************************
 主程式
 ********************************/
@@ -84,10 +84,9 @@ void SlaveInit(void)
 	halLedSet(8);
 	basicRfConfig.myAddr = A_ZONE;
     if (basicRfInit(&basicRfConfig) == FAILED){}	
-	
+	pTxData[0] = 0x2222;
     basicRfReceiveOn();			
 	ProgramDelay = 300;
-	ModeRam[0] = 0;
     halLcdWriteString(HAL_LCD_LINE_1,0,"I.O.L_System");
 	halLcdWriteString(HAL_LCD_LINE_2,0,"Slave_A Ready..");
 }
@@ -102,15 +101,16 @@ void Mode(uint8 a)
 			for(uint8 i = 0;i < 100;i++)
 			{
 				READProgram(i);
+				SendData(i);
 				halLcdDisplayUint8(HAL_LCD_LINE_2,8,HAL_LCD_RADIX_DEC,i);
 				for(uint8 j = 0;j < 8;j++)
 				{
 					LedProgram(j);
 					halMcuWaitMs(250);
-				}
+				}				
 				halLedSetPort(0x00);
 				halMcuWaitMs(ProgramDelay);
-				i = BreakMode(i,0x0001);
+				i = BreakMode(i,1);
 			}			
 			break;		
 		case 2:
@@ -125,7 +125,7 @@ void Mode(uint8 a)
 					LedProgram(j);
 					halMcuWaitMs(250);
 				}
-				i = BreakMode(i,0x0002);
+				i = BreakMode(i,2);
 				halMcuWaitMs(ProgramDelay);
 			}		
 			break;
@@ -148,9 +148,14 @@ uint8 BreakMode(uint8 i,uint8 j)
 		{
 			halLcdWriteString(HAL_LCD_LINE_1,0,"Slave_A:NewMode");
 			halMcuWaitMs(100);
-			if(j == 0x0001) return 100;
-			else if(j == 0x0002) return 8;			
+			if(j == 1) return 100;
+			else if(j == 2) return 8;			
 		}
 		return i;
 	}
+}
+void SendData(uint8 Program)
+{
+	pTxData[1] = Program;
+	basicRfSendPacket(Master,pTxData,APP_PAYLOAD_LENGTH);
 }
