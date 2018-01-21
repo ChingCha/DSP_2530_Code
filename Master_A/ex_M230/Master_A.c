@@ -57,6 +57,7 @@ uint8 key;
 uint8 KeyCount;
 uint16 ProgramA[8];
 uint8 ShowMode[3];
+uint8 RxData[3];
 //system.c Function
 void MasterInit(void);
 void Program(uint8 a);
@@ -239,10 +240,10 @@ void CommandZone(uint8 zone)
 {
 	halBuzzer(100);
 	halLcdClear();
-	halLcdWriteString(HAL_LCD_LINE_2,0,"Target : 1 2 3");
+	halLcdWriteString(HAL_LCD_LINE_2,0,"Target : 1 2 3 4");
 	switch(zone)
 	{
-		case 'A':			
+		case 'A':
 			halLcdWriteString(HAL_LCD_LINE_1,0,"Send_Zone : S_A ");
 			CommandAction(0);
 			SendData(0);
@@ -318,29 +319,43 @@ void ShowZoneMode(uint8 zone)
     halLcdClear();
 	halLcdWriteString(HAL_LCD_LINE_1,0,"Slave  Woking");
 	halLcdWriteString(HAL_LCD_LINE_2,0,"Program:");
-	switch(zone)
+	while (!basicRfPacketIsReady())
 	{
-		case 0:
-			halLcdWriteString(HAL_LCD_LINE_1,5,"A");
-			while (!basicRfPacketIsReady())
-			{
 				halLedToggle(7);
-				halMcuWaitMs(10);
-			}		
-			while(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL) > 0)
-			{
-				halLcdWriteIntToChar(HAL_LCD_LINE_2,9,pRxData[1]);
-				key = halKeypadPushed();
-				if(key == '*') break;
-			}
-			break;
-		case 1:
-			halLcdWriteString(HAL_LCD_LINE_1,5,"B");
-			break;
-		case 2:
-			halLcdWriteString(HAL_LCD_LINE_1,5,"C");
-			break;
+				halMcuWaitMs(100);
 	}
+	while(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL) > 0)
+	{
+		switch(pRxData[0])
+		{
+			case 0x01:
+				RxData[0] = pRxData[1];
+				break;
+			case 0x02:
+				RxData[1] = pRxData[1];
+				break;
+			case 0x03:
+				RxData[2] = pRxData[1];
+				break;
+		}
+		switch(zone)
+		{
+			case 0:
+				halLcdWriteString(HAL_LCD_LINE_1,5,"A");
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,9,RxData[zone]);				  				
+				break;
+			case 1:
+				halLcdWriteString(HAL_LCD_LINE_1,5,"B");
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,9,RxData[zone]);				  
+				break;
+			case 2:
+				halLcdWriteString(HAL_LCD_LINE_1,5,"C");
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,9,RxData[zone]);	
+				break;
+		}
+		key = halKeypadPushed();
+		if(key == '*') break;
+	}	
 	halLcdClear();
 	halLcdWriteString(HAL_LCD_LINE_1,0,"I.O.L_System:M_A");
 	halLcdWriteString(HAL_LCD_LINE_2,0,"Target:ABC");

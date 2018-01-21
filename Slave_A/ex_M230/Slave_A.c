@@ -50,7 +50,7 @@ void Program(uint8 b);
 void Mode(uint8 a);
 void ShowLCD(void);
 uint8 BreakMode(uint8 i,uint8 j);
-void SendData(uint8 Program);
+void SendData(uint8 Program,uint8 RxData);
 /********************************
 主程式
 ********************************/
@@ -84,7 +84,6 @@ void SlaveInit(void)
 	halLedSet(8);
 	basicRfConfig.myAddr = A_ZONE;
     if (basicRfInit(&basicRfConfig) == FAILED){}	
-	pTxData[0] = 0x2222;
     basicRfReceiveOn();			
 	ProgramDelay = 300;
     halLcdWriteString(HAL_LCD_LINE_1,0,"I.O.L_System");
@@ -101,7 +100,7 @@ void Mode(uint8 a)
 			for(uint8 i = 0;i < 100;i++)
 			{
 				READProgram(i);
-				SendData(i);
+				SendData(i,pRxData[10]);
 				halLcdDisplayUint8(HAL_LCD_LINE_2,8,HAL_LCD_RADIX_DEC,i);
 				for(uint8 j = 0;j < 8;j++)
 				{
@@ -119,7 +118,7 @@ void Mode(uint8 a)
 			for(int i = 0;i < 8;i++)
 			{
 				READProgram(pRxData[i+2]);
-				SendData(pRxData[i+2]);
+				SendData(pRxData[i+2],pRxData[10]);
 				halLcdDisplayUint8(HAL_LCD_LINE_2,8,HAL_LCD_RADIX_DEC,pRxData[i+2]);
 				for(int j = 0;j < 8;j++)
 				{
@@ -145,7 +144,7 @@ uint8 BreakMode(uint8 i,uint8 j)
 {
 	if(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL) > 0)
 	{
-		if(pRxData[0] != j)
+		if((pRxData[0] != j) || (pRxData[1] * 100 != ProgramDelay))
 		{
 			halLcdWriteString(HAL_LCD_LINE_1,0,"Slave_A:NewMode");
 			halMcuWaitMs(100);
@@ -155,8 +154,9 @@ uint8 BreakMode(uint8 i,uint8 j)
 		return i;
 	}
 }
-void SendData(uint8 Program)
+void SendData(uint8 Program,uint8 RxData)
 {
-	pTxData[1] = Program;
-	basicRfSendPacket(Master,pTxData,APP_PAYLOAD_LENGTH);
+		pTxData[0] = 0x01;
+		pTxData[1] = Program;
+		basicRfSendPacket(Master,pTxData,APP_PAYLOAD_LENGTH);
 }
