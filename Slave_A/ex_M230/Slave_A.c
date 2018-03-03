@@ -20,10 +20,15 @@
 
 // BasicRF address definitions
 #define PAN_ID                	0x1111
-#define A_ZONE           		0x2222
+#define SLAVE_NUM	0x1117
 #define APP_PAYLOAD_LENGTH        255
 #define Master            	0x3333
-
+typedef struct TxMaster
+{
+	uint16 Slave_Num;
+	uint8 Slave_Data1;
+	uint8 Slave_Data2;
+};
 
 //---------------------------------------------------------------
 // Application states
@@ -41,6 +46,7 @@
 static uint8 pRxData[APP_PAYLOAD_LENGTH];
 static uint8 pTxData[APP_PAYLOAD_LENGTH];
 static basicRfCfg_t basicRfConfig;
+char SlaveID;
 //-------------------------------------------------
 uint8 key;
 uint16 ProgramDelay;
@@ -51,20 +57,28 @@ void Mode(uint8 a);
 void ShowLCD(void);
 uint8 BreakMode(uint8 i,uint8 j);
 void SendData(uint8 Program,uint8 RxData);
+void SearchMaster(void);
 /********************************
 主程式
 ********************************/
 void main(void)
 {   
 	SlaveInit();
+	while(1)
+	{
+		key = halButtonPushed();
+		if(key == 1)
+		{
+			SearchMaster();
+			break;
+		}
+	}
     while (1)
 	{		
         while (!basicRfPacketIsReady())
 		{
             halLedToggle(7);
-            halMcuWaitMs(10);
-			halLedToggle(7);
-            halMcuWaitMs(10);
+            halMcuWaitMs(1500);
         }				
 		while(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL) > 0)
 		{						
@@ -82,12 +96,12 @@ void SlaveInit(void)
 	#endif 
 	halBoardInit();	
 	halLedSet(8);
-	basicRfConfig.myAddr = A_ZONE;
+	basicRfConfig.myAddr = SLAVE_NUM;
     if (basicRfInit(&basicRfConfig) == FAILED){}	
     basicRfReceiveOn();			
 	ProgramDelay = 300;
     halLcdWriteString(HAL_LCD_LINE_1,0,"I.O.L_System");
-	halLcdWriteString(HAL_LCD_LINE_2,0,"Slave_A Ready..");
+	halLcdWriteString(HAL_LCD_LINE_2,0,"Search Master");
 }
 void Mode(uint8 a)
 {
@@ -135,7 +149,8 @@ void Mode(uint8 a)
 void ShowLCD(void)
 {
 	halLcdClear();
-	halLcdWriteString(HAL_LCD_LINE_1,0,"Slave_A:Mode");
+	halLcdWriteString(HAL_LCD_LINE_1,0,"Slave_ :Mode");
+	halLcdWriteChar(HAL_LCD_LINE_1,6,SlaveID);
 	halLcdWriteString(HAL_LCD_LINE_2,0,"Program:");
 	halLcdDisplayUint16(HAL_LCD_LINE_2,12,HAL_LCD_RADIX_DEC,ProgramDelay);
 }
@@ -146,7 +161,8 @@ uint8 BreakMode(uint8 i,uint8 j)
 	{
 		if((pRxData[0] != j) || (pRxData[1] * 100 != ProgramDelay))
 		{
-			halLcdWriteString(HAL_LCD_LINE_1,0,"Slave_A:NewMode");
+			halLcdWriteString(HAL_LCD_LINE_1,0,"Slave_ :NewMode");
+			halLcdWriteChar(HAL_LCD_LINE_1,6,SlaveID);
 			halMcuWaitMs(100);
 			if(j == 1) return 100;
 			else if(j == 2) return 8;			
@@ -156,7 +172,13 @@ uint8 BreakMode(uint8 i,uint8 j)
 }
 void SendData(uint8 Program,uint8 RxData)
 {
-		pTxData[0] = 0x01;
+		pTxData[0] = SLAVE_NUM;
 		pTxData[1] = Program;
 		basicRfSendPacket(Master,pTxData,APP_PAYLOAD_LENGTH);
+}
+void SearchMaster(void)
+{
+	pTxData[0] = SLAVE_NUM;
+	pTxData[1] = 255;
+	basicRfSendPacket(Master,pTxData,APP_PAYLOAD_LENGTH);
 }

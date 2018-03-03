@@ -43,9 +43,14 @@
         0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xcf, 
     };
 #endif
-
 static uint8 pTxData[APP_PAYLOAD_LENGTH];	//Tx資料的上限
 static uint8 pRxData[APP_PAYLOAD_LENGTH];	//Rx資料的上限
+typedef struct RxSlave
+{
+	uint16 Slave_Num;
+	uint8 Slave_Data1;
+	uint8 Slave_Data2;
+};
 static basicRfCfg_t basicRfConfig;			//宣告RFConfig組態
 /******************************************************
 pTxData[0] = Mode1 or 2
@@ -58,6 +63,7 @@ uint8 KeyCount;
 uint16 ProgramA[8];
 uint8 ShowMode[3];
 uint8 RxData[3];
+uint8 SlaveNum;
 //system.c Function
 void MasterInit(void);
 void Program(uint8 a);
@@ -71,16 +77,19 @@ void AutoReadEEPRom(void);
 void halLcdWriteIntToChar(uint8 lcd_line,uint8 lcd_col,uint8 lcd_text);
 void ShowZoneMode(uint8 zone);
 void SendData(uint8 zone);
+void RxRegister(void);
 //主函數
+
 void main(void) 
 {
     MasterInit();
 	while(1)
 	{
+
+		RxRegister();
 		key = halKeypadPushed();
 		if(key == 'A' || key == 'B' || key == 'C') CommandZone(key);
-		halMcuWaitMs(300); 
-		
+		halMcuWaitMs(300); 		
 	}
 }
 void MasterInit(void)
@@ -108,10 +117,11 @@ void MasterInit(void)
 
 	halLcdWriteString(HAL_LCD_LINE_1,0,"I.O.L_System:M_A");
 	halLcdWriteString(HAL_LCD_LINE_2,0,"Target:ABC___");
-
+	SlaveNum = 0;
 	ShowMode[0] = 0;
 	ShowMode[1] = 0;
 	ShowMode[2] = 0;
+	struct RxSlave Slave[3];
 }
 /***************************
 Client_Program_Order()
@@ -423,4 +433,10 @@ void SendData(uint8 zone)
 		if(zone == 0) basicRfSendPacket(A_ZONE,pTxData,APP_PAYLOAD_LENGTH);
 		if(zone == 1) basicRfSendPacket(B_ZONE,pTxData,APP_PAYLOAD_LENGTH);
 		if(zone == 2) basicRfSendPacket(C_ZONE,pTxData,APP_PAYLOAD_LENGTH);
+}
+
+void RxRegister(void)
+{	
+	uint8 seqNumber;
+	seqNumber = rxi.seqNumber;
 }
