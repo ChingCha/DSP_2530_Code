@@ -1046,6 +1046,9 @@
     <file>
       <name>$PROJ_DIR$\Master_A.c</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\Program.c</name>
+    </file>
   </group>
   <group>
     <name>basic rf</name>

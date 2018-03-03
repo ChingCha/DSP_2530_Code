@@ -28,9 +28,14 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=1614716976
+Checksum=-381509584
 [InstructionProfiling]
 Enabled=_ 0
+[Breakpoints]
+Count=0
+[ChipconEmu]
+Stop timers on halt=1
+Leave target running=1
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -38,19 +43,13 @@ Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
-[Breakpoints]
-Count=0
-[ChipconEmu]
-Stop timers on halt=0
-Leave target running=1
 [Aliases]
 A0=_ "C:\Users\L632\Desktop\DSP_Wireless_¶i¶¥´Ú\components\common\hal_digio.c" ""
-A1=_ "C:\Users\L632\Desktop\DSP_Wireless_¶i¶¥´Ú\components\common\hal_lcd.c" ""
-A2=_ "C:\Users\L632\Desktop\DSP_Wireless_¶i¶¥´Ú\components\common\hal_rf.c" ""
-A3=_ "C:\Users\L632\Desktop\DSP_Wireless_¶i¶¥´Ú\components\targets\mcu-kit1\hal_uart.c" ""
-A4=_ "D:\Texas Instruments\CC2530\DSP_Wireless_¶i¶¥´Ú\components\targets\mcu-kit1\hal_led.c" "V:\Workspace\CC2530\DSP_Wireless_¶i¶¥´Ú\components\targets\mcu-kit1\hal_led.c"
-A5=_ "D:\Texas Instruments\CC2530_ex_¶i¶¥´Ú\components\targets\mcu-kit1\hal_led.c" "V:\Workspace\CC2530\DSP_Wireless_¶i¶¥´Ú\components\targets\mcu-kit1\hal_led.c"
-A6=_ "D:\Texas Instruments\CC2530_ex_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c" "V:\Workspace\CC2530\CC2530_ex_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c"
-A7=_ "V:\Workspace\CC2530\DSP_Wireless_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c" "D:\Texas Instruments\CC2530\DSP_Wireless_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c"
-Count=8
+A1=_ "C:\Users\L632\Desktop\DSP_Wireless_¶i¶¥´Ú\components\common\hal_rf.c" ""
+A2=_ "C:\Users\L632\Desktop\DSP_Wireless_¶i¶¥´Ú\components\targets\mcu-kit1\hal_uart.c" ""
+A3=_ "D:\Texas Instruments\CC2530\DSP_Wireless_¶i¶¥´Ú\components\targets\mcu-kit1\hal_led.c" "V:\Workspace\CC2530\DSP_Wireless_¶i¶¥´Ú\components\targets\mcu-kit1\hal_led.c"
+A4=_ "D:\Texas Instruments\CC2530_ex_¶i¶¥´Ú\components\targets\mcu-kit1\hal_led.c" "V:\Workspace\CC2530\DSP_Wireless_¶i¶¥´Ú\components\targets\mcu-kit1\hal_led.c"
+A5=_ "D:\Texas Instruments\CC2530_ex_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c" "V:\Workspace\CC2530\CC2530_ex_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c"
+A6=_ "V:\Workspace\CC2530\DSP_Wireless_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c" "D:\Texas Instruments\CC2530\DSP_Wireless_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c"
+Count=7
 SuppressDialog=1

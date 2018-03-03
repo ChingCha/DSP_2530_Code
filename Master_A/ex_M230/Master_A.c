@@ -1,4 +1,9 @@
-//LED_Matrix
+/*------------------------------------------------------------------
+File name: Master.c
+Description:This is I.O.L system master control application functions.
+Updated:2018/03/03
+-------------------------------------------------------------------*/
+//-----------------------CC2530 Include--------------------------
 #include "hal_defs.h"
 #include "hal_mcu.h"
 #include "hal_board.h"
@@ -10,32 +15,24 @@
 #include "hal_rf.h"
 #include "basic_rf.h"
 #include "hal_keypad.h"
-
-//C_Compiler
 #include <string.h>
-
-//M230.h
 #include "hal_cc8051.h"
 #include "hal_uart.h"
 #include "util.h"
 #include "M230.h"
-
+#include "Program.h"
+//---------------------------Define-----------------------------------
 #define RF_CHANNEL                18      // 2.4 GHz RF channel
-
 // BasicRF address definitions
 #define PAN_ID		0x1111
 #define A_ZONE	0x2222
 #define B_ZONE	0x2233
 #define C_ZONE	0x2244
 #define Master	0x3333
-
-#define APP_PAYLOAD_LENGTH        255	//定義封包傳遞大小
-
-
+#define APP_PAYLOAD_LENGTH        255	//Packet size
 // Application states
 #define IDLE                      0
 #define SEND_CMD                  1
-
 #ifdef SECURITY_CCM
     // Security key
     static uint8 key[] = 
@@ -43,28 +40,22 @@
         0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xcf, 
     };
 #endif
-static uint8 pTxData[APP_PAYLOAD_LENGTH];	//Tx資料的上限
-static uint8 pRxData[APP_PAYLOAD_LENGTH];	//Rx資料的上限
-typedef struct RxSlave
-{
-	uint16 Slave_Num;
-	uint8 Slave_Data1;
-	uint8 Slave_Data2;
-};
-static basicRfCfg_t basicRfConfig;			//宣告RFConfig組態
-/******************************************************
+static uint8 pTxData[APP_PAYLOAD_LENGTH];	//Transmitter data size
+static uint8 pRxData[APP_PAYLOAD_LENGTH];	//Receiver data size
+static basicRfCfg_t basicRfConfig;			//RFConfig
+/*-------------------------------------------------------------------
 pTxData[0] = Mode1 or 2
 pTxData[1] = Delay
-pTxData[2] to pTxData[9] 自訂8個節目順序傳送
-******************************************************/
-//system.c Variables
+pTxData[2] to pTxData[9] is custom program array
+pTxData[10] if  1 = command, if 2 = observed
+-------------------------------------------------------------------*/
+//-------------------------variable----------------------------------
 uint8 key;
 uint8 KeyCount;
 uint16 ProgramA[8];
-uint8 ShowMode[3];
 uint8 RxData[3];
-uint8 SlaveNum;
-//system.c Function
+uint8 uart_buf[20];
+//-------------------------Function---------------------------------
 void MasterInit(void);
 void Program(uint8 a);
 void Client_Program_Order(void);
@@ -77,24 +68,21 @@ void AutoReadEEPRom(void);
 void halLcdWriteIntToChar(uint8 lcd_line,uint8 lcd_col,uint8 lcd_text);
 void ShowZoneMode(uint8 zone);
 void SendData(uint8 zone);
-void RxRegister(void);
-//主函數
-
+//-------------------------main function----------------------------------
 void main(void) 
 {
     MasterInit();
 	while(1)
 	{
-
-		RxRegister();
 		key = halKeypadPushed();
 		if(key == 'A' || key == 'B' || key == 'C') CommandZone(key);
 		halMcuWaitMs(300); 		
 	}
 }
+//-------------------------initialization function----------------------------------
 void MasterInit(void)
 {
-	// 配置RF參數
+	// RFConfig
     basicRfConfig.panId = PAN_ID;
     basicRfConfig.channel = RF_CHANNEL;
     basicRfConfig.ackRequest = TRUE;
@@ -102,14 +90,10 @@ void MasterInit(void)
         basicRfConfig.securityKey = key;
     #endif
 	
-	// 初始化擴充板、LCD、點矩陣、M230
+	//initialization、LCD、M230
     halBoardInit();
     halLcdInit();
 	M230_Init();
-	
-	// 裝置已經通電的提醒
-    halLedSet(8);
-    halBuzzer(300);
 	
     basicRfConfig.myAddr = Master;
     if (basicRfInit(&basicRfConfig) == FAILED){}
@@ -117,18 +101,14 @@ void MasterInit(void)
 
 	halLcdWriteString(HAL_LCD_LINE_1,0,"I.O.L_System:M_A");
 	halLcdWriteString(HAL_LCD_LINE_2,0,"Target:ABC___");
-	SlaveNum = 0;
-	ShowMode[0] = 0;
-	ShowMode[1] = 0;
-	ShowMode[2] = 0;
-	struct RxSlave Slave[3];
+
 }
-/***************************
+/*------------------------------------------------------------------------------------------------------
 Client_Program_Order()
-1.輸入00~99之間的數值，輸入完按下#(Enter進行儲存)
-2.最多自訂8個節目順序
-3.完成後傳值，返回
-****************************/
+the function can custom program
+1.input 00~99 then target *(clear) or #(enter)
+2.Repeat 8 times
+------------------------------------------------------------------------------------------------------*/
 void Client_Program_Order()
 {	
 	KeyCount = 0;
@@ -148,18 +128,22 @@ void Client_Program_Order()
 			{		
 				key = halKeypadPushed();
 				halLcdWriteChar(HAL_LCD_LINE_2,KeyCount,key);
-				halBuzzer(100);
 				KeyCount ++;
 			}
 			halMcuWaitMs(300);
 		}
 		ProgramA[ProgramZ] = ProgramXY[0] * 10 + ProgramXY[1];
+		READProgram(ProgramA[ProgramZ]);
+		for(int i = 0; i < 8; i++)
+		{
+			LedProgram(i);
+			halMcuWaitMs(250);
+		}
 		pTxData[ProgramZ+1] = ProgramA[ProgramZ];
 		halLcdWriteString(HAL_LCD_LINE_2,3,"Press * or #");
 		key = halKeypadPushed();
 		if(key == '#')
 		{
-			halBuzzer(100);
 			ProgramZ ++;
 			KeyCount = 0;
 			halLcdWriteString(HAL_LCD_LINE_2,0,"__ Press * or #");
@@ -173,19 +157,15 @@ void Client_Program_Order()
 		halMcuWaitMs(300);
 	}
 }
-/*********************************************************
-halLcdWriteIntToChar(LCD第幾行,的第幾個字,顯示的數值)
-可將數值自動轉換為字串顯示在LCD上(限定一個字?未測試)
-*********************************************************/
 void halLcdWriteIntToChar(uint8 lcd_line,uint8 lcd_col,uint8 lcd_text)
 {
 	char *pValue = convInt32ToText(lcd_text);
 	if(lcd_line == HAL_LCD_LINE_1) halLcdWriteString(HAL_LCD_LINE_1,lcd_col,pValue);
 	if(lcd_line == HAL_LCD_LINE_2) halLcdWriteString(HAL_LCD_LINE_2,lcd_col,pValue);
 }
-/***************************
+/*------------------------------------------------------------------------------------------------------
 Client_Program_Time()
-***************************/
+------------------------------------------------------------------------------------------------------*/
 void Client_Program_Time()
 {		
 	uint8 ProgramDelay[2];
@@ -219,10 +199,9 @@ void Client_Program_Time()
 	SendTime = ProgramDelay[0] * 10 + ProgramDelay[1];
 	pTxData[1] = SendTime;
 }
-/********************
+/*------------------------------------------------------------------------------------------------------
 ReadKeyInt()
-用數值型態回傳鍵盤值
-********************/
+------------------------------------------------------------------------------------------------------*/
 uint8 ReadKeyInt(void)
 {
 	key = halKeypadPushed();
@@ -238,43 +217,27 @@ uint8 ReadKeyInt(void)
 	else if(key == '0') return 0;
 	else return 11;
 }
-/*************************
+/*------------------------------------------------------------------------------------------------------
 CommandZone(uint8 zone)
-1.判斷要送給哪一區A~F
-2.清除LCD，LCD顯示要傳送的點
-3.進入CommandAction副程式讀取要進行的模式
-4.將資料一併送出
-5.預覽全狀態
-*************************/
+------------------------------------------------------------------------------------------------------*/
 void CommandZone(uint8 zone)
 {
-	halBuzzer(100);
 	halLcdClear();
 	halLcdWriteString(HAL_LCD_LINE_2,0,"Target : 1 2 3 4");
 	switch(zone)
 	{
 		case 'A':
 			halLcdWriteString(HAL_LCD_LINE_1,0,"Send_Zone : S_A ");
-			CommandAction(0);
-			SendData(0);
+			CommandAction(0);			
 			break;
 		case 'B':
 			halLcdWriteString(HAL_LCD_LINE_1,0,"Send_Zone : S_B ");
 			CommandAction(1);
-			SendData(1);
 			break;
 		case 'C':
 			halLcdWriteString(HAL_LCD_LINE_1,0,"Send_Zone : S_C ");
 			CommandAction(2);
-			SendData(2);
 			break;
-/*		case 'D':
-			break;
-		case 'E':
-			break;
-		case 'F':
-			break;
-*/
 		default:
 			break;
 	}
@@ -283,59 +246,59 @@ void CommandZone(uint8 zone)
 	halLcdWriteString(HAL_LCD_LINE_1,0,"I.O.L_System:M_A");
 	halLcdWriteString(HAL_LCD_LINE_2,0,"Target:ABC___");
 }
-/*****************************
-CommandAction(uint8 zone)
-1.判斷輸入的模式1~3
-2.設定區域地址?
-3.LCD顯示
-4.回傳模式的數值
-*****************************/
+/*------------------------------------------------------------------------------------------------------
+CommandAction(zone)
+------------------------------------------------------------------------------------------------------*/
 void CommandAction(uint8 zone)
 {
 	uint8 Mode;
 	while(1)
 	{
 		Mode = ReadKeyInt();
-		if(Mode > 0 && Mode < 5) break;
+		if(Mode > 0 && Mode < 5  || Mode == 0) break;
 	}
-	halBuzzer(100);
 	switch(Mode)
-	{			
+	{	
 		case 1:
-			halLcdWriteString(HAL_LCD_LINE_2,0,"Send_Mode : 1 ");
+			halLcdWriteString(HAL_LCD_LINE_2,0,"Send_Mode : 1     ");
 			WriteEEPROM(zone,1);
+			SendData(zone);
+			halMcuWaitMs(1000);
+			ShowZoneMode(zone);
 			break;			
 		case 2:
 			Client_Program_Order();
-			halLcdWriteString(HAL_LCD_LINE_2,0,"Send_Mode : 2 ");
+			halLcdWriteString(HAL_LCD_LINE_2,0,"Send_Mode : 2     ");
 			WriteEEPROM(zone,2);
+			SendData(zone);
+			halMcuWaitMs(1000);
+			ShowZoneMode(zone);
 			break;
 		case 3:
 			Client_Program_Time();
-			halLcdWriteString(HAL_LCD_LINE_2,0,"Send_Mode : 3 ");
+			halLcdWriteString(HAL_LCD_LINE_2,0,"Send_Mode : 3     ");
 			WriteEEPROM(zone,3);
+			SendData(zone);
+			halMcuWaitMs(1000);
+			ShowZoneMode(zone);
 			break;
 		case 4:
 			ShowZoneMode(zone);
 			break;
 	}
 }
-/*********************
-ShowZoneMode()
-顯示當前每個模式所進行的節目(方便監測)
-*********************/
+/*------------------------------------------------------------------------------------------------------
+ShowZoneMode(zone)
+------------------------------------------------------------------------------------------------------*/
 void ShowZoneMode(uint8 zone)
 {
     halLcdClear();
-	halLcdWriteString(HAL_LCD_LINE_1,0,"Slave  Woking");
-	halLcdWriteString(HAL_LCD_LINE_2,0,"Program:");
-	while (!basicRfPacketIsReady())
+	uint8 check;
+	halLcdWriteString(HAL_LCD_LINE_1,0,"Slave Working");
+	halLcdWriteString(HAL_LCD_LINE_2,0,"Program:       0");
+	while(1)
 	{
-				halLedToggle(7);
-				halMcuWaitMs(100);
-	}
-	while(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL) > 0)
-	{
+		basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL);
 		switch(pRxData[0])
 		{
 			case 0x01:
@@ -348,41 +311,58 @@ void ShowZoneMode(uint8 zone)
 				RxData[2] = pRxData[1];
 				break;
 		}
+		halLcdWriteString(HAL_LCD_LINE_2,14,"00");
 		switch(zone)
 		{
 			case 0:
-				halLcdWriteString(HAL_LCD_LINE_1,5,"A");
-				halLcdWriteIntToChar(HAL_LCD_LINE_2,9,RxData[zone]);				  				
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,8,RxData[zone]);
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,12,M230_ReadEEPROM(1) / 10);
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,13,M230_ReadEEPROM(1) % 10);
 				break;
 			case 1:
-				halLcdWriteString(HAL_LCD_LINE_1,5,"B");
-				halLcdWriteIntToChar(HAL_LCD_LINE_2,9,RxData[zone]);				  
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,8,RxData[zone]);
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,12,M230_ReadEEPROM(1) / 10);
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,13,M230_ReadEEPROM(1) % 10);			
 				break;
 			case 2:
-				halLcdWriteString(HAL_LCD_LINE_1,5,"C");
-				halLcdWriteIntToChar(HAL_LCD_LINE_2,9,RxData[zone]);	
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,8,RxData[zone]);
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,12,M230_ReadEEPROM(1) / 10);
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,13,M230_ReadEEPROM(1) % 10);
 				break;
+		}
+		if(RxData[zone] == 0 && check < 6)
+		{
+			check++;
+			halLcdWriteString(HAL_LCD_LINE_1,0,"Slave Return 0");
+		}
+		if(RxData[zone] == 0 && check > 5)
+		{
+			halLcdWriteString(HAL_LCD_LINE_1,0,"Slave No Work");
+		}
+		if(RxData[zone] != 0)
+		{
+			halLcdWriteString(HAL_LCD_LINE_1,0,"Slave Working   ");
 		}
 		key = halKeypadPushed();
 		if(key == '*') break;
-	}	
+	}
+	check = 0;
 	halLcdClear();
 	halLcdWriteString(HAL_LCD_LINE_1,0,"I.O.L_System:M_A");
 	halLcdWriteString(HAL_LCD_LINE_2,0,"Target:ABC");
 }
-/**************************************************
-M230	
-位置	功能
+/*------------------------------------------------------------------------------------------------------
+M230
 0			S_A_Mode 1 or 2
 10		S_B_Mode 1 or 2
 20		S_C_Mode 1 or 2
-2~9	S_A_Mode2 Program1~8
+2~9		S_A_Mode2 Program1~8
 12~19	S_B_Mode2 Program1~8
 22~29	S_C_Mode2 Program1~8
-1		S_A Delay
+1			S_A Delay
 11		S_B Delay
 21		S_C Delay
-**************************************************/
+------------------------------------------------------------------------------------------------------*/
 void WriteEEPROM(uint8 zone,uint8 mode)
 {
 	uint8 JJY;
@@ -424,19 +404,15 @@ void AutoReadEEPRom(void)
 }
 void SendData(uint8 zone)
 {
-	uint8 JJY;
+	uint8 JJY, EAT;
+	EAT = 30 + zone;
 	for(uint8 j = 0; j < 10; j++)
 	{
 			JJY = zone * 10 + j;
 			pTxData[j] = M230_ReadEEPROM(JJY);
 	}
+	pTxData[10] = M230_ReadEEPROM(EAT);
 		if(zone == 0) basicRfSendPacket(A_ZONE,pTxData,APP_PAYLOAD_LENGTH);
 		if(zone == 1) basicRfSendPacket(B_ZONE,pTxData,APP_PAYLOAD_LENGTH);
 		if(zone == 2) basicRfSendPacket(C_ZONE,pTxData,APP_PAYLOAD_LENGTH);
-}
-
-void RxRegister(void)
-{	
-	uint8 seqNumber;
-	seqNumber = rxi.seqNumber;
 }
