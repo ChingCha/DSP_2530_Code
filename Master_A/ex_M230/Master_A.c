@@ -100,7 +100,7 @@ void MasterInit(void)
     basicRfReceiveOn();
 
 	halLcdWriteString(HAL_LCD_LINE_1,0,"I.O.L_System:M_A");
-	halLcdWriteString(HAL_LCD_LINE_2,0,"Target:ABC___");
+	halLcdWriteString(HAL_LCD_LINE_2,0,"Target:A B C");
 
 }
 /*------------------------------------------------------------------------------------------------------
@@ -244,7 +244,7 @@ void CommandZone(uint8 zone)
 	halMcuWaitMs(1000);
 	halLcdClear();
 	halLcdWriteString(HAL_LCD_LINE_1,0,"I.O.L_System:M_A");
-	halLcdWriteString(HAL_LCD_LINE_2,0,"Target:ABC___");
+	halLcdWriteString(HAL_LCD_LINE_2,0,"Target:A B C");
 }
 /*------------------------------------------------------------------------------------------------------
 CommandAction(zone)
@@ -315,19 +315,58 @@ void ShowZoneMode(uint8 zone)
 		switch(zone)
 		{
 			case 0:
-				halLcdWriteIntToChar(HAL_LCD_LINE_2,8,RxData[zone]);
-				halLcdWriteIntToChar(HAL_LCD_LINE_2,12,M230_ReadEEPROM(1) / 10);
-				halLcdWriteIntToChar(HAL_LCD_LINE_2,13,M230_ReadEEPROM(1) % 10);
+				if(RxData[zone] < 10)
+				{
+					halLcdWriteString(HAL_LCD_LINE_2,8,"0");
+					halLcdWriteIntToChar(HAL_LCD_LINE_2,9,RxData[zone]);
+				}
+				else
+				{
+					halLcdWriteIntToChar(HAL_LCD_LINE_2,8,RxData[zone]);
+				}
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,12,M230_ReadEEPROM(1) / 10));
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,13,M230_ReadEEPROM(1) % 10));
+				uart_buf[0] = 0x000A;	//Slave_ID
+				uart_buf[1] = RxData[zone];		//Program_ID				
+				uart_buf[2] = M230_ReadEEPROM(1);		//Delay_time
+				halUartWrite(uart_buf,3);
+				halMcuWaitMs(1000);
 				break;
 			case 1:
-				halLcdWriteIntToChar(HAL_LCD_LINE_2,8,RxData[zone]);
-				halLcdWriteIntToChar(HAL_LCD_LINE_2,12,M230_ReadEEPROM(1) / 10);
-				halLcdWriteIntToChar(HAL_LCD_LINE_2,13,M230_ReadEEPROM(1) % 10);			
+				if(RxData[zone] < 10)
+				{
+					halLcdWriteString(HAL_LCD_LINE_2,8,"0");
+					halLcdWriteIntToChar(HAL_LCD_LINE_2,9,RxData[zone]);
+				}
+				else
+				{
+					halLcdWriteIntToChar(HAL_LCD_LINE_2,8,RxData[zone]);
+				}
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,12,M230_ReadEEPROM(11) / 10);
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,13,M230_ReadEEPROM(11) % 10);		
+				uart_buf[0] = 0x000B;	//Slave_ID
+				uart_buf[1] = RxData[zone];		//Program_ID				
+				uart_buf[2] = M230_ReadEEPROM(11);		//Delay_time
+				halUartWrite(uart_buf,3);
+				halMcuWaitMs(1000);
 				break;
 			case 2:
-				halLcdWriteIntToChar(HAL_LCD_LINE_2,8,RxData[zone]);
-				halLcdWriteIntToChar(HAL_LCD_LINE_2,12,M230_ReadEEPROM(1) / 10);
-				halLcdWriteIntToChar(HAL_LCD_LINE_2,13,M230_ReadEEPROM(1) % 10);
+				if(RxData[zone] < 10)
+				{
+					halLcdWriteString(HAL_LCD_LINE_2,8,"0");
+					halLcdWriteIntToChar(HAL_LCD_LINE_2,9,RxData[zone]);
+				}
+				else
+				{
+					halLcdWriteIntToChar(HAL_LCD_LINE_2,8,RxData[zone]);
+				}
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,12,M230_ReadEEPROM(21) / 10);
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,13,M230_ReadEEPROM(21) % 10);
+				uart_buf[0] = 0x000C;	//Slave_ID
+				uart_buf[1] = RxData[zone];		//Program_ID				
+				uart_buf[2] = M230_ReadEEPROM(21);		//Delay_time
+				halUartWrite(uart_buf,3);
+				halMcuWaitMs(1000);
 				break;
 		}
 		if(RxData[zone] == 0 && check < 6)
@@ -349,7 +388,7 @@ void ShowZoneMode(uint8 zone)
 	check = 0;
 	halLcdClear();
 	halLcdWriteString(HAL_LCD_LINE_1,0,"I.O.L_System:M_A");
-	halLcdWriteString(HAL_LCD_LINE_2,0,"Target:ABC");
+	halLcdWriteString(HAL_LCD_LINE_2,0,"Wait.....");
 }
 /*------------------------------------------------------------------------------------------------------
 M230

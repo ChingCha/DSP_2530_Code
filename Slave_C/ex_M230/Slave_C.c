@@ -143,7 +143,7 @@ uint8 BreakMode(uint8 i,uint8 j)
 }
 void SendData(uint8 Program,uint8 RxData)
 {
-		pTxData[0] = 0x01;
+		pTxData[0] = 0x03;
 		pTxData[1] = Program;
 		basicRfSendPacket(Master,pTxData,APP_PAYLOAD_LENGTH);
 }
