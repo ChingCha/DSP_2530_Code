@@ -68,6 +68,7 @@ void AutoReadEEPRom(void);
 void halLcdWriteIntToChar(uint8 lcd_line,uint8 lcd_col,uint8 lcd_text);
 void ShowZoneMode(uint8 zone);
 void SendData(uint8 zone);
+void ResetSlave(uint8 zone);
 //-------------------------main function----------------------------------
 void main(void) 
 {
@@ -255,7 +256,7 @@ void CommandAction(uint8 zone)
 	while(1)
 	{
 		Mode = ReadKeyInt();
-		if(Mode > 0 && Mode < 5  || Mode == 0) break;
+		if(Mode > 0 && Mode < 6) break;
 	}
 	switch(Mode)
 	{	
@@ -284,6 +285,9 @@ void CommandAction(uint8 zone)
 			break;
 		case 4:
 			ShowZoneMode(zone);
+			break;
+		case 5:
+			ResetSlave(zone);
 			break;
 	}
 }
@@ -324,8 +328,8 @@ void ShowZoneMode(uint8 zone)
 				{
 					halLcdWriteIntToChar(HAL_LCD_LINE_2,8,RxData[zone]);
 				}
-				halLcdWriteIntToChar(HAL_LCD_LINE_2,12,M230_ReadEEPROM(1) / 10));
-				halLcdWriteIntToChar(HAL_LCD_LINE_2,13,M230_ReadEEPROM(1) % 10));
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,12,M230_ReadEEPROM(1) / 10);
+				halLcdWriteIntToChar(HAL_LCD_LINE_2,13,M230_ReadEEPROM(1) % 10);
 				uart_buf[0] = 0x000A;	//Slave_ID
 				uart_buf[1] = RxData[zone];		//Program_ID				
 				uart_buf[2] = M230_ReadEEPROM(1);		//Delay_time
@@ -454,4 +458,14 @@ void SendData(uint8 zone)
 		if(zone == 0) basicRfSendPacket(A_ZONE,pTxData,APP_PAYLOAD_LENGTH);
 		if(zone == 1) basicRfSendPacket(B_ZONE,pTxData,APP_PAYLOAD_LENGTH);
 		if(zone == 2) basicRfSendPacket(C_ZONE,pTxData,APP_PAYLOAD_LENGTH);
+}
+void ResetSlave(uint8 zone)
+{
+	pTxData[0] = 5;
+	if(zone == 0) basicRfSendPacket(A_ZONE,pTxData,APP_PAYLOAD_LENGTH);
+	if(zone == 1) basicRfSendPacket(B_ZONE,pTxData,APP_PAYLOAD_LENGTH);
+	if(zone == 2) basicRfSendPacket(C_ZONE,pTxData,APP_PAYLOAD_LENGTH);
+	halLcdClear();
+	halLcdWriteString(HAL_LCD_LINE_1,0,"Reset Slave");
+	halMcuWaitMs(1000);
 }

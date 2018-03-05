@@ -56,7 +56,8 @@ void main(void)
 	{				
 		while(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL) > 0)
 		{									
-			Mode(pRxData[0]);
+			if(pRxData[0] != 5) Mode(pRxData[0]);
+			if(pRxData[0] == 5) halMcuReset();
 		}   
     }
 }
