@@ -17,15 +17,15 @@
         <debug>1</debug>
         <option>
           <name>DerivativeDescriptionFile</name>
-          <state>$TOOLKIT_DIR$\config\devices\Texas Instruments\CC2530.i51</state>
+          <state>$TOOLKIT_DIR$\config\devices\Texas Instruments\CC2530F256.i51</state>
         </option>
         <option>
           <name>Previous Derivative File</name>
-          <state>$TOOLKIT_DIR$\config\devices\Texas Instruments\CC2530.i51</state>
+          <state>$TOOLKIT_DIR$\config\devices\Texas Instruments\CC2530F256.i51</state>
         </option>
         <option>
           <name>Showed Derivative</name>
-          <state>CC2530</state>
+          <state>CC2530F256</state>
         </option>
         <option>
           <name>CPU Core</name>
@@ -212,7 +212,7 @@
         </option>
         <option>
           <name>CodeBankRegMask</name>
-          <state>0x07</state>
+          <state>0xFF</state>
         </option>
         <option>
           <name>GeneralMisraRules98</name>
@@ -221,7 +221,7 @@
         </option>
         <option>
           <name>PDATA 8-15 register address</name>
-          <state>0xA0</state>
+          <state>0x93</state>
         </option>
         <option>
           <name>PDATA 16-31 register address</name>
@@ -1041,16 +1041,10 @@
   <group>
     <name>application</name>
     <file>
-      <name>$PROJ_DIR$\..\..\components\targets\mcu-kit2\hal_lcd.h</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\..\components\module\M230.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\Program.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\Program.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\Slave_B.c</name>
@@ -1068,22 +1062,10 @@
   <group>
     <name>common</name>
     <file>
-      <name>$PROJ_DIR$\..\..\components\common\hal_adc.c</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\..\components\common\hal_clock.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\components\common\hal_digio.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\components\common\hal_drink.c</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\..\..\components\common\hal_int.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\components\common\hal_ledmatrix.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\components\common\hal_mcu.c</name>
@@ -1097,29 +1079,20 @@
     <file>
       <name>$PROJ_DIR$\..\..\components\common\hal_rf_util.c</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\..\components\common\ioCC2530.h</name>
+    </file>
   </group>
   <group>
     <name>targets</name>
     <file>
-      <name>$PROJ_DIR$\..\..\components\targets\mcu-kit1\hal_board.c</name>
+      <name>$PROJ_DIR$\..\..\components\targets\zigbee-mcu1\hal_board.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\components\targets\zigbee-mcu1\hal_button.c</name>
+      <name>$PROJ_DIR$\..\..\components\targets\zigbee-mcu1\hal_buzzer.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\components\targets\mcu-kit1\hal_buzzer.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\components\targets\mcu-kit1\hal_keypad.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\components\targets\mcu-kit2\hal_lcd.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\components\targets\mcu-kit1\hal_led.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\..\components\targets\mcu-kit1\hal_uart.c</name>
+      <name>$PROJ_DIR$\..\..\components\targets\zigbee-mcu1\hal_led.c</name>
     </file>
   </group>
   <group>

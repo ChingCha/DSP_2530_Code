@@ -12,6 +12,8 @@
 #include "hal_led.h"
 #include "hal_int.h"
 #include "Program.h"
+#include "hal_cc8051.h"
+
 //-------------------------------------------------------------------
 // LOCAL VARIABLES
 //-------------------------------------------------------------------
@@ -20,7 +22,8 @@ uint8 ProgramROM[8];
 //-------------------------------------------------------------------
 void LedProgram(uint8 a)
 {
-	halLedSetPort(ProgramROM[a]);
+	MCU_PORT_OUTPUT(0, ProgramROM[a]);
+    halLedSetPort(ProgramROM[a]);
 }
 void READProgram(uint8 b)
 {   

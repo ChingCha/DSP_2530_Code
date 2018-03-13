@@ -1,22 +1,20 @@
 /*------------------------------------------------------------------
 File name: Slave_A.c
 Description:This is I.O.L system master control application functions.
-Updated:2018/03/03
+Updated:2018/03/12
 -------------------------------------------------------------------*/
 //-----------------------CC2530 Include--------------------------
+#include "ioCC2530.h"
 #include "hal_defs.h"
 #include "hal_mcu.h"
 #include "hal_board.h"
 #include "hal_led.h"
 #include "hal_int.h"
-#include "hal_button.h"
-#include "hal_buzzer.h"
 #include "hal_rf.h"
 #include "basic_rf.h"
-#include "hal_keypad.h"
 #include "Program.h"
-#include "hal_lcd.h"
 #include <string.h>
+#include "hal_cc8051.h"
 //---------------------------Define-----------------------------------
 #define RF_CHANNEL                18      // 2.4 GHz RF channel
 // BasicRF address definitions
@@ -39,13 +37,11 @@ static uint8 pRxData[APP_PAYLOAD_LENGTH];
 static uint8 pTxData[APP_PAYLOAD_LENGTH];
 static basicRfCfg_t basicRfConfig;
 //-------------------------variable----------------------------------
-uint8 key;
 uint16 ProgramDelay;
 //-------------------------Function---------------------------------
 void SlaveInit(void);
 void Program(uint8 b);
 void Mode(uint8 a);
-void ShowLCD(void);
 uint8 BreakMode(uint8 i,uint8 j);
 void SendData(uint8 Program,uint8 RxData);
 //-------------------------main function----------------------------------
@@ -74,8 +70,9 @@ void SlaveInit(void)
     if (basicRfInit(&basicRfConfig) == FAILED){}	
     basicRfReceiveOn();			
 	ProgramDelay = 300;
-    halLcdWriteString(HAL_LCD_LINE_1,0,"I.O.L_System");
-	halLcdWriteString(HAL_LCD_LINE_2,0,"SlaveA Ready...");
+    P0SEL &= ~0xFF;
+    P0DIR |= 0xFF;
+    MCU_PORT_OUTPUT(0, 0x00);
 }
 void Mode(uint8 a)
 {
@@ -83,49 +80,38 @@ void Mode(uint8 a)
     switch(a)
     {
 		case 1:
-			ShowLCD();
-			halLcdWriteString(HAL_LCD_LINE_1,12,"1");
-			for(int i = 0x0001;i < 0x0064;i++)
+			for(int i = 1;i < 100;i++)
 			{
 				READProgram(i);
 				SendData(i,pRxData[10]);
-				halLcdDisplayUint8(HAL_LCD_LINE_2,8,HAL_LCD_RADIX_DEC,i);
-				for(uint8 j = 0x0000;j < 0x0008;j++)
+				for(uint8 j = 0;j < 8;j++)
 				{
 					LedProgram(j);
 					halMcuWaitMs(ProgramDelay);
 				}				
 				halLedSetPort(0x00);
+                MCU_PORT_OUTPUT(0, 0x00);
 				halMcuWaitMs(ProgramDelay);
 				i = BreakMode(i,1);
 			}			
 			break;		
 		case 2:
-			ShowLCD();
-			halLcdWriteString(HAL_LCD_LINE_1,12,"2");
-			for(int i = 0x0000;i < 0x000A;i++)
+			for(int i = 0;i < 8;i++)
 			{
-				READProgram(pRxData[i+2]);
-				SendData(pRxData[i+2],pRxData[10]);
-				halLcdDisplayUint8(HAL_LCD_LINE_2,8,HAL_LCD_RADIX_DEC,pRxData[i+2]);
+				READProgram(pRxData[2]);
+				SendData(pRxData[2],pRxData[10]);
 				for(int j = 0;j < 8;j++)
 				{
 					LedProgram(j);
 					halMcuWaitMs(ProgramDelay);
 				}
 				i = BreakMode(i,2);
-				halMcuWaitMs(ProgramDelay);
-			}		
+                MCU_PORT_OUTPUT(0, 0x00);
+                halLedSetPort(0x00);
+                halMcuWaitMs(ProgramDelay);
+			}
 			break;
     }
-}
-
-void ShowLCD(void)
-{
-	halLcdClear();
-	halLcdWriteString(HAL_LCD_LINE_1,0,"Slave_A:Mode");
-	halLcdWriteString(HAL_LCD_LINE_2,0,"Program:");
-	halLcdDisplayUint16(HAL_LCD_LINE_2,12,HAL_LCD_RADIX_DEC,ProgramDelay);
 }
 
 uint8 BreakMode(uint8 i,uint8 j)
@@ -134,10 +120,9 @@ uint8 BreakMode(uint8 i,uint8 j)
 	{
 		if((pRxData[0] != j) || (pRxData[1] * 100 != ProgramDelay))
 		{
-			halLcdWriteString(HAL_LCD_LINE_1,0,"Slave_A:NewMode");
 			halMcuWaitMs(100);
 			if(j == 1) return 100;
-			else if(j == 2) return 8;			
+			else if(j == 2) return 9;			
 		}
 		return i;
 	}

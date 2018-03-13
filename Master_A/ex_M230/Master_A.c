@@ -119,7 +119,7 @@ void Client_Program_Order()
 	halMcuWaitMs(300);
 	halLcdWriteString(HAL_LCD_LINE_1,0,"Input Program_1");
 	halLcdWriteString(HAL_LCD_LINE_2,0,"__");
-	while(ProgramZ < 9)
+	while(ProgramZ < 2)
 	{
 		halLcdWriteIntToChar(HAL_LCD_LINE_1,14,ProgramZ);
 		while(KeyCount < 2)
@@ -334,7 +334,7 @@ void ShowZoneMode(uint8 zone)
 				uart_buf[1] = RxData[zone];		//Program_ID				
 				uart_buf[2] = M230_ReadEEPROM(1);		//Delay_time
 				halUartWrite(uart_buf,3);
-				halMcuWaitMs(1000);
+				//halMcuWaitMs(1000);
 				break;
 			case 1:
 				if(RxData[zone] < 10)
@@ -352,7 +352,7 @@ void ShowZoneMode(uint8 zone)
 				uart_buf[1] = RxData[zone];		//Program_ID				
 				uart_buf[2] = M230_ReadEEPROM(11);		//Delay_time
 				halUartWrite(uart_buf,3);
-				halMcuWaitMs(1000);
+				//halMcuWaitMs(1000);
 				break;
 			case 2:
 				if(RxData[zone] < 10)
@@ -370,7 +370,7 @@ void ShowZoneMode(uint8 zone)
 				uart_buf[1] = RxData[zone];		//Program_ID				
 				uart_buf[2] = M230_ReadEEPROM(21);		//Delay_time
 				halUartWrite(uart_buf,3);
-				halMcuWaitMs(1000);
+				//halMcuWaitMs(1000);
 				break;
 		}
 		if(RxData[zone] == 0 && check < 6)
