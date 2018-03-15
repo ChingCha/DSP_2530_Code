@@ -765,7 +765,7 @@
         </option>
         <option>
           <name>XclFile</name>
-          <state>C:\Program Files (x86)\IAR Systems\Embedded Workbench 6.0\8051\config\devices\Texas Instruments\lnk51ew_cc2530F256_banked.xcl</state>
+          <state>C:\Program Files (x86)\IAR Systems\Embedded Workbench 6.0 Evaluation\8051\config\devices\Texas Instruments\lnk51ew_cc2530F256_banked.xcl</state>
         </option>
         <option>
           <name>XclFileSlave</name>

@@ -52,6 +52,7 @@ void main(void)
 	{				
 		while(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL) > 0)
 		{									
+			if(pRxData[0] == 0 && pRxData[1] == 0) SendData(0,0);
 			if(pRxData[0] != 5) Mode(pRxData[0]);
 			if(pRxData[0] == 5) halMcuReset();
 		}   
@@ -96,10 +97,10 @@ void Mode(uint8 a)
 			}			
 			break;		
 		case 2:
-			for(int i = 0;i < 8;i++)
+			for(int i = 0;i < 2;i++)
 			{
-				READProgram(pRxData[2]);
-				SendData(pRxData[2],pRxData[10]);
+				READProgram(pRxData[i+2]);
+				SendData(pRxData[i+2],pRxData[10]);
 				for(int j = 0;j < 8;j++)
 				{
 					LedProgram(j);
@@ -122,7 +123,7 @@ uint8 BreakMode(uint8 i,uint8 j)
 		{
 			halMcuWaitMs(100);
 			if(j == 1) return 100;
-			else if(j == 2) return 9;			
+			else if(j == 2) return 10;			
 		}
 		return i;
 	}

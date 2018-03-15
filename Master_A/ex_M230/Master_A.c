@@ -73,6 +73,7 @@ void ResetSlave(uint8 zone);
 void main(void) 
 {
     MasterInit();
+	AutoReadEEPRom();
 	while(1)
 	{
 		key = halKeypadPushed();
@@ -119,7 +120,7 @@ void Client_Program_Order()
 	halMcuWaitMs(300);
 	halLcdWriteString(HAL_LCD_LINE_1,0,"Input Program_1");
 	halLcdWriteString(HAL_LCD_LINE_2,0,"__");
-	while(ProgramZ < 2)
+	while(ProgramZ < 3)
 	{
 		halLcdWriteIntToChar(HAL_LCD_LINE_1,14,ProgramZ);
 		while(KeyCount < 2)
@@ -432,17 +433,39 @@ void WriteEEPROM(uint8 zone,uint8 mode)
 }
 void AutoReadEEPRom(void)
 {
-	uint8 JJY;
-	for(uint8 i = 0; i < 3; i++)
+	uint8 JJY, EAT;
+	EAT = 0;
+	while(EAT < 10)
 	{
-		for(uint8 j = 0; j < 10; j++)
+		key = halKeypadPushed();
+		halLcdWriteIntToChar(HAL_LCD_LINE_2,14,EAT);		
+		if(key == 'A' || key == 'B' || key == 'C')
 		{
-			JJY = i * 10 + j;
-			pTxData[j] = M230_ReadEEPROM(JJY);
+			CommandZone(key);
+			break;
 		}
-		if(i == 0) basicRfSendPacket(A_ZONE,pTxData,APP_PAYLOAD_LENGTH);
-		if(i == 1) basicRfSendPacket(B_ZONE,pTxData,APP_PAYLOAD_LENGTH);
-		if(i == 2) basicRfSendPacket(C_ZONE,pTxData,APP_PAYLOAD_LENGTH);
+		if(key == '0')
+		{
+			halLcdWriteString(HAL_LCD_LINE_2,14,"DM");
+			break;
+		}
+		halMcuWaitMs(1000);
+		EAT++;
+	}
+	if(EAT == 10)
+	{
+		for(uint8 i = 0; i < 3; i++)
+		{
+			for(uint8 j = 0; j < 10; j++)
+			{
+				JJY = i * 10 + j;
+				pTxData[j] = M230_ReadEEPROM(JJY);
+			}
+			if(i == 0) basicRfSendPacket(A_ZONE,pTxData,APP_PAYLOAD_LENGTH);
+			if(i == 1) basicRfSendPacket(B_ZONE,pTxData,APP_PAYLOAD_LENGTH);
+			if(i == 2) basicRfSendPacket(C_ZONE,pTxData,APP_PAYLOAD_LENGTH);
+		}
+		halLcdWriteString(HAL_LCD_LINE_2,13,"ROM");
 	}
 }
 void SendData(uint8 zone)

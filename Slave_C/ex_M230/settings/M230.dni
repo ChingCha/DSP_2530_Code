@@ -28,7 +28,7 @@ TriggerName=main
 LimitSize=0
 ByteLimit=50
 [DebugChecksum]
-Checksum=1481523599
+Checksum=-1361158487
 [InstructionProfiling]
 Enabled=_ 0
 [Log file]
@@ -44,9 +44,10 @@ Count=0
 Stop timers on halt=0
 Leave target running=1
 [Aliases]
-A0=_ "D:\Texas Instruments\CC2530\DSP_Wireless_¶i¶¥´Ú\components\common\hal_digio.c" "V:\Workspace\CC2530\DSP_Wireless_¶i¶¥´Ú\components\common\hal_digio.c"
-A1=_ "D:\Texas Instruments\CC2530_ex_¶i¶¥´Ú\components\targets\mcu-kit1\hal_led.c" "V:\Workspace\CC2530\DSP_Wireless_¶i¶¥´Ú\components\targets\mcu-kit1\hal_led.c"
-A2=_ "D:\Texas Instruments\CC2530_ex_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c" "V:\Workspace\CC2530\CC2530_ex_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c"
-A3=_ "V:\Workspace\CC2530\DSP_Wireless_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c" "D:\Texas Instruments\CC2530\DSP_Wireless_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c"
-Count=4
-SuppressDialog=0
+A0=_ "D:\Texas Instruments\CC2530\DSP_Wireless_¶i¶¥´Ú\components\basicrf\basic_rf.c" "C:\Users\L0614\Desktop\DSP\DSP_2530_Code\components\basicrf\basic_rf.c"
+A1=_ "D:\Texas Instruments\CC2530\DSP_Wireless_¶i¶¥´Ú\components\common\hal_digio.c" "V:\Workspace\CC2530\DSP_Wireless_¶i¶¥´Ú\components\common\hal_digio.c"
+A2=_ "D:\Texas Instruments\CC2530_ex_¶i¶¥´Ú\components\targets\mcu-kit1\hal_led.c" "V:\Workspace\CC2530\DSP_Wireless_¶i¶¥´Ú\components\targets\mcu-kit1\hal_led.c"
+A3=_ "D:\Texas Instruments\CC2530_ex_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c" "V:\Workspace\CC2530\CC2530_ex_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c"
+A4=_ "V:\Workspace\CC2530\DSP_Wireless_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c" "D:\Texas Instruments\CC2530\DSP_Wireless_¶i¶¥´Ú\mcu-kit1\ex_M230\ex.c"
+Count=5
+SuppressDialog=1
