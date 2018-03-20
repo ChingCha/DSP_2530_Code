@@ -47,7 +47,7 @@ static basicRfCfg_t basicRfConfig;			//RFConfig
 pTxData[0] = Mode1 or 2
 pTxData[1] = Delay
 pTxData[2] to pTxData[9] is custom program array
-pTxData[10] if  1 = command, if 2 = observed
+pTxData[10] Program count
 -------------------------------------------------------------------*/
 //-------------------------variable----------------------------------
 uint8 key;
@@ -261,7 +261,7 @@ void CommandAction(uint8 zone)
 	while(1)
 	{
 		Mode = ReadKeyInt();
-		if(Mode > 0 && Mode < 6) break;
+		if(Mode > 0 && Mode < 7) break;
 	}
 	switch(Mode)
 	{	
@@ -343,6 +343,12 @@ void ShowZoneMode(uint8 zone)
 				uart_buf[2] = M230_ReadEEPROM(1);		//Delay_time
 				halUartWrite(uart_buf,3);
 				//halMcuWaitMs(1000);
+				/*READProgram(RxData[zone]);
+				for(int i = 0; i < 8; i++)
+				{
+					LedProgram(i);
+					halMcuWaitMs(250);
+				}*/
 				break;
 			case 1:
 				if(RxData[zone] < 10)
@@ -361,6 +367,12 @@ void ShowZoneMode(uint8 zone)
 				uart_buf[2] = M230_ReadEEPROM(11);		//Delay_time
 				halUartWrite(uart_buf,3);
 				//halMcuWaitMs(1000);
+				/*READProgram(RxData[zone]);
+				for(int i = 0; i < 8; i++)
+				{
+					LedProgram(i);
+					halMcuWaitMs(250);
+				}*/
 				break;
 			case 2:
 				if(RxData[zone] < 10)
@@ -379,6 +391,12 @@ void ShowZoneMode(uint8 zone)
 				uart_buf[2] = M230_ReadEEPROM(21);		//Delay_time
 				halUartWrite(uart_buf,3);
 				//halMcuWaitMs(1000);
+				READProgram(RxData[zone]);
+				/*for(int i = 0; i < 8; i++)
+				{
+					LedProgram(i);
+					halMcuWaitMs(250);
+				}*/
 				break;
 		}
 		if(RxData[zone] == 0 && check < 6)
@@ -446,7 +464,7 @@ void AutoReadEEPRom(void)
 	{
 		key = halKeypadPushed();
 		halLcdWriteIntToChar(HAL_LCD_LINE_2,14,EAT);		
-		if(key == 'A' || key == 'B' || key == 'C')
+		if(key == 'A' || key == 'B' || key == 'C' || key == 'F')
 		{
 			CommandZone(key);
 			break;
@@ -484,7 +502,7 @@ void SendData(uint8 zone)
 			JJY = zone * 10 + j;
 			pTxData[j] = M230_ReadEEPROM(JJY);
 	}
-	pTxData[10] = M230_ReadEEPROM(EAT);
+		pTxData[10] = M230_ReadEEPROM(EAT);
 		if(zone == 0) basicRfSendPacket(A_ZONE,pTxData,APP_PAYLOAD_LENGTH);
 		if(zone == 1) basicRfSendPacket(B_ZONE,pTxData,APP_PAYLOAD_LENGTH);
 		if(zone == 2) basicRfSendPacket(C_ZONE,pTxData,APP_PAYLOAD_LENGTH);
@@ -505,16 +523,19 @@ void ProgramCount(uint8 zone)
 	EAT = 30 + zone;
 	halLcdClear();
 	halLcdWriteString(HAL_LCD_LINE_1,0,"Input Program:");
+	halLcdWriteString(HAL_LCD_LINE_2,0,"Input 1~8");
+	halMcuWaitMs(1000);
 	while(1)
 	{
 		JJY = ReadKeyInt();
-		if(JJY != 11) 
+		if(JJY != 11 && JJY != 9 && JJY != 0) 
 		{	
 			M230_WriteEEPROM(EAT,JJY);
 			uint8 k = halKeypadPushed();
 			halLcdWriteChar(HAL_LCD_LINE_1,14,k);
 			break;
-		}		
+		}
+		halMcuWaitMs(150);		
 	}
 	halLcdWriteString(HAL_LCD_LINE_2,0,"Set success!");
 	halMcuWaitMs(1000);
@@ -526,16 +547,23 @@ void ResetROM(void)
 	M230_WriteEEPROM(0,1);
 	M230_WriteEEPROM(10,1);
 	M230_WriteEEPROM(20,1);
-	for(uint i = 0;i < 30; i+10)
+	for(uint8 i = 0;i < 30; i+= 10)
 	{
 		for(uint8 j = 2; j <= 9 ; j++)
 		{
-			M230_WriteEEPROM(i + j,0);
+			uint8 k = i + j;
+			M230_WriteEEPROM(k,0);
 		}
 	}
 	M230_WriteEEPROM(1,10);
 	M230_WriteEEPROM(11,10);
 	M230_WriteEEPROM(22,10);
+	M230_WriteEEPROM(30,2);
+	M230_WriteEEPROM(31,2);
+	M230_WriteEEPROM(32,2);
 	halLcdWriteString(HAL_LCD_LINE_2,0,"Set success!");
 	halMcuWaitMs(1000);
+	halLcdClear();
+	halLcdWriteString(HAL_LCD_LINE_1,0,"I.O.L_System:M_A");
+	halLcdWriteString(HAL_LCD_LINE_2,0,"Target:A B C");
 }

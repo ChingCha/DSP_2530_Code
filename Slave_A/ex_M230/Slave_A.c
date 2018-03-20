@@ -48,14 +48,14 @@ void SendData(uint8 Program,uint8 RxData);
 void main(void)
 {   
 	SlaveInit();
+	SendData(0,0);
     while (1)
-	{				
+	{	
 		while(basicRfReceive(pRxData, APP_PAYLOAD_LENGTH, NULL) > 0)
-		{									
-			if(pRxData[0] == 0 && pRxData[1] == 0) SendData(0,0);
+		{ 												
 			if(pRxData[0] != 5) Mode(pRxData[0]);
 			if(pRxData[0] == 5) halMcuReset();
-		}   
+		}
     }
 }
 void SlaveInit(void)
@@ -97,7 +97,8 @@ void Mode(uint8 a)
 			}			
 			break;		
 		case 2:
-			for(int i = 0;i < 2;i++)
+			uint8 count = pRxData[10];
+			for(int i = 0;i <= count;i++)
 			{
 				READProgram(pRxData[i+2]);
 				SendData(pRxData[i+2],pRxData[10]);

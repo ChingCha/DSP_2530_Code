@@ -12,6 +12,8 @@
 #include "hal_led.h"
 #include "hal_int.h"
 #include "Program.h"
+#include "hal_cc8051.h"
+
 //-------------------------------------------------------------------
 // LOCAL VARIABLES
 //-------------------------------------------------------------------
@@ -20,7 +22,8 @@ uint8 ProgramROM[8];
 //-------------------------------------------------------------------
 void LedProgram(uint8 a)
 {
-	halLedSetPort(ProgramROM[a]);
+	MCU_PORT_OUTPUT(0, ProgramROM[a]);
+    halLedSetPort(ProgramROM[a]);
 }
 void READProgram(uint8 b)
 {   
@@ -87,16 +90,6 @@ void READProgram(uint8 b)
 			ProgramROM[7] = 0x00;
 			break;
 		case 7:
-			ProgramROM[0] = 0x11;
-			ProgramROM[1] = 0xFF;
-			ProgramROM[2] = 0x22;
-			ProgramROM[3] = 0xFF;
-			ProgramROM[4] = 0x44;
-			ProgramROM[5] = 0xFF;
-			ProgramROM[6] = 0x88;
-			ProgramROM[7] = 0xFF;
-			break;
-		case 8:
 			ProgramROM[0] = 0x88;
 			ProgramROM[1] = 0x00;
 			ProgramROM[2] = 0x44;
@@ -106,17 +99,7 @@ void READProgram(uint8 b)
 			ProgramROM[6] = 0x11;
 			ProgramROM[7] = 0x00;
 			break;
-		case 9:
-			ProgramROM[0] = 0x88;
-			ProgramROM[1] = 0xFF;
-			ProgramROM[2] = 0x44;
-			ProgramROM[3] = 0xFF;
-			ProgramROM[4] = 0x22;
-			ProgramROM[5] = 0xFF;
-			ProgramROM[6] = 0x11;
-			ProgramROM[7] = 0xFF;
-			break;
-		case 10:
+		case 8:
 			ProgramROM[0] = 0x81;
 			ProgramROM[1] = 0x42;
 			ProgramROM[2] = 0x24;
@@ -126,7 +109,17 @@ void READProgram(uint8 b)
 			ProgramROM[6] = 0x81;
 			ProgramROM[7] = 0x00;
 			break;
-		case 11:
+		case 9:
+			ProgramROM[0] = 0x18;
+			ProgramROM[1] = 0x24;
+			ProgramROM[2] = 0x42;
+			ProgramROM[3] = 0x81;
+			ProgramROM[4] = 0x42;
+			ProgramROM[5] = 0x24;
+			ProgramROM[6] = 0x18;
+			ProgramROM[7] = 0x00;
+			break;
+		case 10:
 			ProgramROM[0] = 0x81;
 			ProgramROM[1] = 0xC3;
 			ProgramROM[2] = 0xE7;
@@ -136,95 +129,105 @@ void READProgram(uint8 b)
 			ProgramROM[6] = 0x81;
 			ProgramROM[7] = 0x00;
 			break;
+		case 11:
+			ProgramROM[0] = 0x01;
+			ProgramROM[1] = 0x05;
+			ProgramROM[2] = 0x15;
+			ProgramROM[3] = 0x55;
+			ProgramROM[4] = 0x15;
+			ProgramROM[5] = 0x05;
+			ProgramROM[6] = 0x01;
+			ProgramROM[7] = 0x00;
+			break;
 		case 12:
-			ProgramROM[0] = 0x13;
-			ProgramROM[1] = 0x00;
-			ProgramROM[2] = 0x23;
-			ProgramROM[3] = 0x00;
-			ProgramROM[4] = 0x43;
-			ProgramROM[5] = 0x00;
-			ProgramROM[6] = 0x83;
+			ProgramROM[0] = 0x02;
+			ProgramROM[1] = 0x0A;
+			ProgramROM[2] = 0x2A;
+			ProgramROM[3] = 0xAA;
+			ProgramROM[4] = 0x2A;
+			ProgramROM[5] = 0x0A;
+			ProgramROM[6] = 0x02;
 			ProgramROM[7] = 0x00;
 			break;
 		case 13:
-			ProgramROM[0] = 0xA1;
-			ProgramROM[1] = 0x00;
-			ProgramROM[2] = 0x2A;
-			ProgramROM[3] = 0x00;
-			ProgramROM[4] = 0x4A;
-			ProgramROM[5] = 0x00;
-			ProgramROM[6] = 0xA8;
+			ProgramROM[0] = 0x01;
+			ProgramROM[1] = 0x05;
+			ProgramROM[2] = 0x15;
+			ProgramROM[3] = 0x55;
+			ProgramROM[4] = 0x15;
+			ProgramROM[5] = 0x05;
+			ProgramROM[6] = 0x01;
 			ProgramROM[7] = 0x00;
 			break;
 		case 14:
-			ProgramROM[0] = 0x71;
-			ProgramROM[1] = 0x61;
-			ProgramROM[2] = 0x51;
-			ProgramROM[3] = 0x41;
-			ProgramROM[4] = 0x31;
-			ProgramROM[5] = 0x21;
-			ProgramROM[6] = 0x11;
-			ProgramROM[7] = 0x01;
+			ProgramROM[0] = 0x02;
+			ProgramROM[1] = 0x0A;
+			ProgramROM[2] = 0x2A;
+			ProgramROM[3] = 0xAA;
+			ProgramROM[4] = 0xEA;
+			ProgramROM[5] = 0xFA;
+			ProgramROM[6] = 0xFE;
+			ProgramROM[7] = 0xFF;
 			break;
 		case 15:
-			ProgramROM[0] = 0x17;
-			ProgramROM[1] = 0x27;
-			ProgramROM[2] = 0x37;
-			ProgramROM[3] = 0x47;
-			ProgramROM[4] = 0x57;
-			ProgramROM[5] = 0x67;
-			ProgramROM[6] = 0x77;
-			ProgramROM[7] = 0x87;
+			ProgramROM[0] = 0xFF;
+			ProgramROM[1] = 0xFE;
+			ProgramROM[2] = 0xFA;
+			ProgramROM[3] = 0xEA;
+			ProgramROM[4] = 0xAA;
+			ProgramROM[5] = 0x2A;
+			ProgramROM[6] = 0x0A;
+			ProgramROM[7] = 0x02;
 			break;
 		case 16:
-			ProgramROM[0] = 0x7A;
-			ProgramROM[1] = 0x6B;
-			ProgramROM[2] = 0x5C;
-			ProgramROM[3] = 0x4D;
-			ProgramROM[4] = 0x3E;
-			ProgramROM[5] = 0x2F;
-			ProgramROM[6] = 0x10;
+			ProgramROM[0] = 0xFF;
+			ProgramROM[1] = 0xFD;
+			ProgramROM[2] = 0xF5;
+			ProgramROM[3] = 0xD5;
+			ProgramROM[4] = 0x55;
+			ProgramROM[5] = 0x15;
+			ProgramROM[6] = 0x05;
 			ProgramROM[7] = 0x01;
 			break;
 		case 17:
-			ProgramROM[0] = 0xC1;
-			ProgramROM[1] = 0x00;
-			ProgramROM[2] = 0xB2;
-			ProgramROM[3] = 0x00;
-			ProgramROM[4] = 0xA4;
-			ProgramROM[5] = 0x00;
-			ProgramROM[6] = 0x98;
-			ProgramROM[7] = 0x00;
+			ProgramROM[0] = 0x01;
+			ProgramROM[1] = 0x05;
+			ProgramROM[2] = 0x0A;
+			ProgramROM[3] = 0x14;
+			ProgramROM[4] = 0x28;
+			ProgramROM[5] = 0x50;
+			ProgramROM[6] = 0x41;
+			ProgramROM[7] = 0x82;
 			break;
 		case 18:
-			ProgramROM[0] = 0x67;
-			ProgramROM[1] = 0x42;
-			ProgramROM[2] = 0x68;
-			ProgramROM[3] = 0x48;
-			ProgramROM[4] = 0x69;
-			ProgramROM[5] = 0x54;
-			ProgramROM[6] = 0x65;
-			ProgramROM[7] = 0x30;
+			ProgramROM[0] = 0xA0;
+			ProgramROM[1] = 0x50;
+			ProgramROM[2] = 0x28;
+			ProgramROM[3] = 0x14;
+			ProgramROM[4] = 0x0A;
+			ProgramROM[5] = 0x05;
+			ProgramROM[6] = 0x82;
+			ProgramROM[7] = 0x41;
 			break;
 		case 19:
-			ProgramROM[0] = 0x31;
-			ProgramROM[1] = 0x03;
-			ProgramROM[2] = 0x32;
-			ProgramROM[3] = 0x06;
-			ProgramROM[4] = 0x33;
-			ProgramROM[5] = 0x09;
-			ProgramROM[6] = 0x34;
-			ProgramROM[7] = 0x12;
+			ProgramROM[0] = 0x11;
+			ProgramROM[1] = 0x22;
+			ProgramROM[2] = 0x44;
+			ProgramROM[3] = 0x88;
+			ProgramROM[4] = 0x44;
+			ProgramROM[5] = 0x22;
+			ProgramROM[6] = 0x11;
+			ProgramROM[7] = 0x00;
 			break;
 		case 20:
-			ProgramROM[0] = 0x35;
-			ProgramROM[1] = 0x15;
-			ProgramROM[2] = 0x36;
-			ProgramROM[3] = 0x18;
-			ProgramROM[4] = 0x37;
-			ProgramROM[5] = 0x21;
-			ProgramROM[6] = 0x38;
-			ProgramROM[7] = 0x24;
+			ProgramROM[0] = 0x88;
+			ProgramROM[1] = 0x44;
+			ProgramROM[2] = 0x22;
+			ProgramROM[3] = 0x11;
+			ProgramROM[4] = 0x22;
+			ProgramROM[5] = 0x44;
+			ProgramROM[6] = 0x88;
+			ProgramROM[7] = 0x00;
 			break;
 		case 21:
 			ProgramROM[0] = 0x39;
