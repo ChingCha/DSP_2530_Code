@@ -58,7 +58,7 @@ uint8 uart_buf[20];
 //-------------------------Function---------------------------------
 void MasterInit(void);
 void Program(uint8 a);
-void Client_Program_Order(void);
+void Client_Program_Order(uint8 zone);
 void Client_Program_Time(void);
 uint8 ReadKeyInt(void);
 void CommandZone(uint8 zone);
@@ -69,6 +69,8 @@ void halLcdWriteIntToChar(uint8 lcd_line,uint8 lcd_col,uint8 lcd_text);
 void ShowZoneMode(uint8 zone);
 void SendData(uint8 zone);
 void ResetSlave(uint8 zone);
+void ProgramCount(uint8 zone);
+void ResetROM(void);
 //-------------------------main function----------------------------------
 void main(void) 
 {
@@ -77,7 +79,7 @@ void main(void)
 	while(1)
 	{
 		key = halKeypadPushed();
-		if(key == 'A' || key == 'B' || key == 'C') CommandZone(key);
+		if(key == 'A' || key == 'B' || key == 'C' || key == 'F') CommandZone(key);
 		halMcuWaitMs(300); 		
 	}
 }
@@ -111,16 +113,17 @@ the function can custom program
 1.input 00~99 then target *(clear) or #(enter)
 2.Repeat 8 times
 ------------------------------------------------------------------------------------------------------*/
-void Client_Program_Order()
+void Client_Program_Order(uint8 zone)
 {	
 	KeyCount = 0;
 	uint8 ProgramXY[2];
 	uint8 ProgramZ = 1;
+	uint8 ProgramJ = M230_ReadEEPROM(30 + zone);
 	halLcdClear();
 	halMcuWaitMs(300);
 	halLcdWriteString(HAL_LCD_LINE_1,0,"Input Program_1");
 	halLcdWriteString(HAL_LCD_LINE_2,0,"__");
-	while(ProgramZ < 3)
+	while(ProgramZ <= ProgramJ)
 	{
 		halLcdWriteIntToChar(HAL_LCD_LINE_1,14,ProgramZ);
 		while(KeyCount < 2)
@@ -240,7 +243,8 @@ void CommandZone(uint8 zone)
 			halLcdWriteString(HAL_LCD_LINE_1,0,"Send_Zone : S_C ");
 			CommandAction(2);
 			break;
-		default:
+		case 'F':
+			ResetROM();
 			break;
 	}
 	halMcuWaitMs(1000);
@@ -269,7 +273,7 @@ void CommandAction(uint8 zone)
 			ShowZoneMode(zone);
 			break;			
 		case 2:
-			Client_Program_Order();
+			Client_Program_Order(zone);
 			halLcdWriteString(HAL_LCD_LINE_2,0,"Send_Mode : 2     ");
 			WriteEEPROM(zone,2);
 			SendData(zone);
@@ -289,6 +293,9 @@ void CommandAction(uint8 zone)
 			break;
 		case 5:
 			ResetSlave(zone);
+			break;
+		case 6:
+			ProgramCount(zone);
 			break;
 	}
 }
@@ -490,5 +497,45 @@ void ResetSlave(uint8 zone)
 	if(zone == 2) basicRfSendPacket(C_ZONE,pTxData,APP_PAYLOAD_LENGTH);
 	halLcdClear();
 	halLcdWriteString(HAL_LCD_LINE_1,0,"Reset Slave");
+	halMcuWaitMs(1000);
+}
+void ProgramCount(uint8 zone)
+{
+	uint8 JJY, EAT;
+	EAT = 30 + zone;
+	halLcdClear();
+	halLcdWriteString(HAL_LCD_LINE_1,0,"Input Program:");
+	while(1)
+	{
+		JJY = ReadKeyInt();
+		if(JJY != 11) 
+		{	
+			M230_WriteEEPROM(EAT,JJY);
+			uint8 k = halKeypadPushed();
+			halLcdWriteChar(HAL_LCD_LINE_1,14,k);
+			break;
+		}		
+	}
+	halLcdWriteString(HAL_LCD_LINE_2,0,"Set success!");
+	halMcuWaitMs(1000);
+}
+void ResetROM(void)
+{
+	halLcdClear();
+	halLcdWriteString(HAL_LCD_LINE_1,0,"Reset ROM...");
+	M230_WriteEEPROM(0,1);
+	M230_WriteEEPROM(10,1);
+	M230_WriteEEPROM(20,1);
+	for(uint i = 0;i < 30; i+10)
+	{
+		for(uint8 j = 2; j <= 9 ; j++)
+		{
+			M230_WriteEEPROM(i + j,0);
+		}
+	}
+	M230_WriteEEPROM(1,10);
+	M230_WriteEEPROM(11,10);
+	M230_WriteEEPROM(22,10);
+	halLcdWriteString(HAL_LCD_LINE_2,0,"Set success!");
 	halMcuWaitMs(1000);
 }
